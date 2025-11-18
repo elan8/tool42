@@ -10,7 +10,7 @@ Tool42 is an MCP (Model Context Protocol) server that provides Rust development 
 Currently, Tool42 must be installed from source:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/elan8/tool42.git
 cd tool42
 cargo install --path .
 ```
