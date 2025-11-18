@@ -1,5 +1,6 @@
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::process::Command;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,12 +20,18 @@ pub struct PackageInfo {
     pub features: Option<Vec<String>>,
 }
 
-pub fn get_dependencies() -> anyhow::Result<DependencyInfo> {
-    // Run cargo metadata
+pub fn get_dependencies(working_dir: PathBuf) -> anyhow::Result<DependencyInfo> {
+    // Run cargo metadata in the specified working directory
     let output = Command::new("cargo")
         .args(["metadata", "--format-version", "1"])
+        .current_dir(&working_dir)
         .output()
-        .context("Failed to execute cargo metadata command")?;
+        .with_context(|| {
+            format!(
+                "Failed to execute cargo metadata command in directory: {}",
+                working_dir.display()
+            )
+        })?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);

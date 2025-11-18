@@ -26,7 +26,7 @@ The server starts automatically when invoked. Use `tool42 --version` or `tool42 
 - `tool42_read` - Read files with line limits (max 500 lines)
 - `tool42_describe` - Parse Rust source file and extract comprehensive structural information (structs, enums, functions, impl blocks, traits, modules, etc.) with line numbers, visibility, attributes, doc comments, and signatures in JSON format
 - `tool42_search` - Search codebase for symbols, functions, types, or text patterns
-- `tool42_deps` - Get dependency information from Cargo.toml
+- `tool42_deps` - Extract comprehensive dependency information from a Rust project using cargo metadata (workspace root, all packages with versions, sources, dependencies, and features)
 - `tool42_tests` - List all tests in the project with their locations
 - `tool42_project` - Get an overview of the entire project structure
 - `tool42_list` - List directory contents with metadata

@@ -137,9 +137,8 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_deps".into(),
                 title: Some("Get Dependencies".into()),
-                description: Some("Extract dependency information from Cargo.toml".into()),
-                // tool42_deps takes no parameters, so empty schema is correct
-                input_schema: empty_schema(),
+                description: Some("Extract comprehensive dependency information from a Rust project using cargo metadata. Returns workspace root path and a list of all packages (including workspace members) with their names, versions, sources, direct dependencies, and available features. Works for both single-package projects and Cargo workspaces. The output includes all transitive dependencies and provides a complete dependency graph structure in JSON format.".into()),
+                input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(DepsParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
                 icons: None,
@@ -148,7 +147,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_tests".into(),
                 title: Some("List Tests".into()),
-                description: Some("List all tests in the project".into()),
+                description: Some("Discover and list all test functions in a Rust project. Scans the workspace root (found from working_directory) for all Rust source files (.rs), parses them to identify functions with the #[test] attribute, and returns a structured list with test names, file paths, line numbers, and module paths. Automatically skips hidden files/directories and the target directory. Useful for understanding the test suite structure and locating specific tests.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(TestsParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
@@ -168,7 +167,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_list".into(),
                 title: Some("List Directory".into()),
-                description: Some("List directory contents with metadata".into()),
+                description: Some("List the contents of a directory with metadata. Returns all entries (files and subdirectories) with their names, types (file/directory/other), file sizes (for files), and modification timestamps. Entries are sorted with directories first, then files, both alphabetically. If no path is specified, lists the workspace root. Useful for exploring project structure, locating source files, understanding directory organization, and navigating the codebase. Returns structured JSON with entry metadata for easy programmatic access.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(ListParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
@@ -178,7 +177,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_docs".into(),
                 title: Some("Extract Documentation".into()),
-                description: Some("Extract doc comments from Rust code".into()),
+                description: Some("Extract documentation comments from a specific Rust source file. Parses the file to identify all documented items (functions, structs, enums, traits, impl blocks, modules) and returns their doc comments and examples in a structured format. Useful for quickly understanding API documentation, usage examples, and public interfaces without reading the full source code. Requires a path parameter to specify the target file. Returns documentation organized by item type with line numbers for easy reference.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(DocsParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
@@ -188,7 +187,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_refactor_rename".into(),
                 title: Some("Rename Symbol".into()),
-                description: Some("Rename a symbol (struct, enum, function, type, etc.) across the entire codebase".into()),
+                description: Some("Rename a symbol (struct, enum, function, type alias, constant, etc.) across the entire codebase. Searches for all occurrences of the symbol including definitions, usages, imports, and references, then updates them to the new name. Can optionally scope the search to a specific file or directory path. Supports preview mode (default) to review changes before applying, and apply mode to execute the refactoring. Validates changes with cargo check after applying. Returns a detailed list of all changes with file paths, line numbers, and context. Automatically creates backup files before making changes.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(RefactorRenameParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
@@ -198,7 +197,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_refactor_extract".into(),
                 title: Some("Extract Function".into()),
-                description: Some("Extract a code block into a new function".into()),
+                description: Some("Extract a code block (specified by line range) from a Rust source file into a new function. Takes a file path, start/end line numbers (1-based, inclusive), and a function name. Creates a new function containing the extracted code and replaces the original code block with a function call. Handles variable scoping and ensures the extracted function receives necessary parameters. Supports preview mode (default) to review changes before applying, and apply mode to execute the refactoring. Validates changes with cargo check after applying. Returns detailed changes showing the extracted code and the replacement function call. Useful for breaking down large functions, improving code reusability, and enhancing readability.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(RefactorExtractParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
@@ -208,7 +207,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_refactor_move".into(),
                 title: Some("Move Item".into()),
-                description: Some("Move a function/struct/enum to a different module or file".into()),
+                description: Some("Move a function, struct, enum, or other item to a different module or file. Searches the codebase to find the item definition and all its usages, then moves it to the target location (specified as a module path or file path). Automatically updates all imports, references, and usages throughout the codebase to reflect the new location. Supports preview mode (default) to review changes before applying, and apply mode to execute the refactoring. Validates changes with cargo check after applying. Returns a detailed list of all files modified, showing what was moved and where. Useful for reorganizing code structure, improving module organization, and separating concerns.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(RefactorMoveParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
@@ -218,7 +217,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_refactor_signature".into(),
                 title: Some("Change Function Signature".into()),
-                description: Some("Change a function signature and update all call sites".into()),
+                description: Some("Change a function's signature (parameters, return type, visibility, etc.) and automatically update all call sites throughout the codebase. Searches for the function definition and all places where it's called, then updates them to match the new signature. The new_signature parameter should be the complete function signature as it should appear (e.g., \"pub fn my_function(x: i32, y: String) -> bool\"). Supports preview mode (default) to review changes before applying, and apply mode to execute the refactoring. Validates changes with cargo check after applying. Returns detailed changes showing the old and new signatures at the definition and all call sites. Useful for refactoring APIs, adding or removing parameters, changing return types, and updating function visibility.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(RefactorSignatureParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,

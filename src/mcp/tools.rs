@@ -134,11 +134,20 @@ pub async fn handle_search(params: Value) -> Result<Value, String> {
     serde_json::to_value(result).map_err(|e| format!("Serialization error: {}", e))
 }
 
-pub async fn handle_deps(_params: Value) -> Result<Value, String> {
-    let result = tokio::task::spawn_blocking(core::deps::get_dependencies)
-        .await
-        .map_err(|e| format!("Task join error: {}", e))?
-        .map_err(|e| format!("Deps failed: {}", e))?;
+pub async fn handle_deps(params: Value) -> Result<Value, String> {
+    let deps_params: DepsParams =
+        serde_json::from_value(params).map_err(|e| format!("Invalid parameters: {}", e))?;
+
+    let working_dir_str = deps_params.working_directory.clone();
+    let result = tokio::task::spawn_blocking(move || -> Result<_, String> {
+        let working_dir = core::project::resolve_working_directory(&working_dir_str)
+            .map_err(|e| format!("Failed to resolve working directory: {}", e))?;
+        core::deps::get_dependencies(working_dir)
+            .map_err(|e| format!("Deps failed: {}", e))
+    })
+    .await
+    .map_err(|e| format!("Task join error: {}", e))?
+    .map_err(|e| format!("Deps failed: {}", e))?;
 
     serde_json::to_value(result).map_err(|e| format!("Serialization error: {}", e))
 }
@@ -147,25 +156,17 @@ pub async fn handle_tests(params: Value) -> Result<Value, String> {
     let tests_params: TestsParams =
         serde_json::from_value(params).map_err(|e| format!("Invalid parameters: {}", e))?;
 
-    let path_str = tests_params.path.clone();
     let working_dir_str = tests_params.working_directory.clone();
     let result = tokio::task::spawn_blocking(move || -> Result<_, String> {
         // Resolve working_directory to absolute path
         let working_dir = core::project::resolve_working_directory(&working_dir_str)
             .map_err(|e| format!("Failed to resolve working directory: {}", e))?;
 
-        let path = if let Some(p) = path_str {
-            match core::project::resolve_path(&PathBuf::from(p), &working_dir) {
-                Ok(resolved) => Some(resolved),
-                Err(e) => return Err(format!("Failed to resolve path: {}", e)),
-            }
-        } else {
-            match core::project::find_workspace_root(&working_dir) {
-                Ok(root) => Some(root),
-                Err(e) => return Err(format!("Failed to find project root: {}", e)),
-            }
-        };
-        core::tests::find_tests(path).map_err(|e| format!("Tests failed: {}", e))
+        // Find workspace root from working directory
+        let workspace_root = core::project::find_workspace_root(&working_dir)
+            .map_err(|e| format!("Failed to find project root: {}", e))?;
+        
+        core::tests::find_tests(Some(workspace_root)).map_err(|e| format!("Tests failed: {}", e))
     })
     .await
     .map_err(|e| format!("Task join error: {}", e))?
