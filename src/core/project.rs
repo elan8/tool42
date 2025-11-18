@@ -117,53 +117,48 @@ fn extract_workspace_members(toml: &TomlValue, workspace_root: &Path) -> Option<
     
     let mut result = Vec::new();
     
-    match members {
-        TomlValue::Array(arr) => {
-            for member in arr {
-                if let Some(member_str) = member.as_str() {
-                    // Handle glob patterns (e.g., "crates/*")
-                    if member_str.contains('*') {
-                        // Expand glob pattern - find all directories matching the pattern
-                        let pattern = workspace_root.join(member_str);
-                        if let Some(parent) = pattern.parent() {
-                            if let Ok(entries) = fs::read_dir(parent) {
-                                // Extract the prefix before the *
-                                let pattern_str = pattern.to_string_lossy();
-                                let prefix = if let Some(star_pos) = pattern_str.find('*') {
-                                    &pattern_str[..star_pos]
-                                } else {
-                                    pattern_str.as_ref()
-                                };
-                                
-                                for entry in entries {
-                                    if let Ok(entry) = entry {
-                                        let path = entry.path();
-                                        if path.is_dir() {
-                                            let path_str = path.to_string_lossy();
-                                            // Check if path matches the pattern prefix
-                                            if path_str.starts_with(prefix) {
-                                                let cargo_toml = path.join("Cargo.toml");
-                                                if cargo_toml.exists() {
-                                                    result.push(path);
-                                                }
-                                            }
+    if let TomlValue::Array(arr) = members {
+        for member in arr {
+            if let Some(member_str) = member.as_str() {
+                // Handle glob patterns (e.g., "crates/*")
+                if member_str.contains('*') {
+                    // Expand glob pattern - find all directories matching the pattern
+                    let pattern = workspace_root.join(member_str);
+                    if let Some(parent) = pattern.parent() {
+                        if let Ok(entries) = fs::read_dir(parent) {
+                            // Extract the prefix before the *
+                            let pattern_str = pattern.to_string_lossy();
+                            let prefix = if let Some(star_pos) = pattern_str.find('*') {
+                                &pattern_str[..star_pos]
+                            } else {
+                                pattern_str.as_ref()
+                            };
+                            
+                            for entry in entries.flatten() {
+                                let path = entry.path();
+                                if path.is_dir() {
+                                    let path_str = path.to_string_lossy();
+                                    // Check if path matches the pattern prefix
+                                    if path_str.starts_with(prefix) {
+                                        let cargo_toml = path.join("Cargo.toml");
+                                        if cargo_toml.exists() {
+                                            result.push(path);
                                         }
                                     }
                                 }
                             }
                         }
-                    } else {
-                        // Direct path
-                        let member_path = workspace_root.join(member_str);
-                        let cargo_toml = member_path.join("Cargo.toml");
-                        if cargo_toml.exists() {
-                            result.push(member_path);
-                        }
+                    }
+                } else {
+                    // Direct path
+                    let member_path = workspace_root.join(member_str);
+                    let cargo_toml = member_path.join("Cargo.toml");
+                    if cargo_toml.exists() {
+                        result.push(member_path);
                     }
                 }
             }
         }
-        _ => {}
     }
     
     if result.is_empty() {
@@ -259,7 +254,7 @@ fn find_packages(
         // For workspace: only include packages listed in workspace.members
         if let Some(members) = workspace_members {
             for member_path in members {
-                if let Ok(pkg) = parse_package(&member_path, workspace_root) {
+                if let Ok(pkg) = parse_package(member_path, workspace_root) {
                     packages.push(pkg);
                 }
             }
@@ -389,21 +384,19 @@ fn parse_package(
     let src_bin_dir = package_dir.join("src").join("bin");
     if src_bin_dir.exists() && src_bin_dir.is_dir() {
         if let Ok(entries) = fs::read_dir(&src_bin_dir) {
-            for entry in entries {
-                if let Ok(entry) = entry {
-                    let path = entry.path();
-                    if path.is_file() {
-                        if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-                            if ext == "rs" {
-                                if let Some(bin_name) = path.file_stem().and_then(|s| s.to_str()) {
-                                    // Only add if not already added via [[bin]] section
-                                    if !crates.iter().any(|c| c.name == bin_name && matches!(c.crate_type, CrateType::Bin)) {
-                                        crates.push(CrateStructure {
-                                            name: bin_name.to_string(),
-                                            crate_type: CrateType::Bin,
-                                            modules: None,
-                                        });
-                                    }
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_file() {
+                    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+                        if ext == "rs" {
+                            if let Some(bin_name) = path.file_stem().and_then(|s| s.to_str()) {
+                                // Only add if not already added via [[bin]] section
+                                if !crates.iter().any(|c| c.name == bin_name && matches!(c.crate_type, CrateType::Bin)) {
+                                    crates.push(CrateStructure {
+                                        name: bin_name.to_string(),
+                                        crate_type: CrateType::Bin,
+                                        modules: None,
+                                    });
                                 }
                             }
                         }
@@ -502,6 +495,7 @@ fn parse_dependency_value(name: &str, value: &TomlValue) -> Option<CargoDependen
 }
 
 
+#[allow(dead_code)]
 fn find_modules_in_dir(
     dir: &Path,
     package_root: &Path,
@@ -571,6 +565,7 @@ fn find_modules_in_dir(
     Ok(modules)
 }
 
+#[allow(dead_code)]
 fn parse_rust_file_for_modules(
     file_path: &Path,
     package_root: &Path,

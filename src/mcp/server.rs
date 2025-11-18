@@ -75,13 +75,6 @@ impl ServerHandler for Tool42Server {
             }
         }
 
-        // Helper function to create empty object schema
-        fn empty_schema() -> Arc<Map<String, Value>> {
-            let mut map = Map::new();
-            map.insert("type".to_string(), Value::String("object".to_string()));
-            map.insert("properties".to_string(), Value::Object(Map::new()));
-            Arc::new(map)
-        }
 
         let tools = vec![
             Tool {

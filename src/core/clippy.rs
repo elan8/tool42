@@ -15,7 +15,7 @@ pub struct PaginatedResult {
 /// Check if clippy is installed by running `cargo clippy --version`
 pub fn check_clippy_installed(working_dir: &PathBuf) -> anyhow::Result<()> {
     let output = Command::new("cargo")
-        .args(&["clippy", "--version"])
+        .args(["clippy", "--version"])
         .current_dir(working_dir)
         .output()
         .with_context(|| {

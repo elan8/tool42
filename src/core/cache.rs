@@ -17,13 +17,13 @@ type Cache = Arc<Mutex<HashMap<String, CachedOutput>>>;
 static OUTPUT_CACHE: LazyLock<Cache> = LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 /// Generate a cache key from working directory and command arguments
-pub fn generate_cache_key(working_dir: &PathBuf, args: &[String]) -> String {
+pub fn generate_cache_key(working_dir: &Path, args: &[String]) -> String {
     format!("{}|{:?}", working_dir.display(), args)
 }
 
 /// Compute a fingerprint of the project by hashing file modification times
 /// This includes all .rs files and Cargo.toml/Cargo.lock files
-fn compute_project_fingerprint(working_dir: &PathBuf) -> anyhow::Result<u64> {
+fn compute_project_fingerprint(working_dir: &Path) -> anyhow::Result<u64> {
     let project_root = crate::core::project::find_workspace_root(working_dir)
         .with_context(|| format!("Failed to find project root from: {}", working_dir.display()))?;
 
@@ -102,7 +102,7 @@ fn walk_for_rust_files(dir: &Path, files: &mut Vec<PathBuf>) -> anyhow::Result<(
 }
 
 /// Get cached output if available and project hasn't changed
-pub fn get_cached_output(key: &str, working_dir: &PathBuf) -> Option<(Vec<String>, i32)> {
+pub fn get_cached_output(key: &str, working_dir: &Path) -> Option<(Vec<String>, i32)> {
     let cache = OUTPUT_CACHE.lock().unwrap();
 
     let cached = cache.get(key)?;
@@ -127,7 +127,7 @@ pub fn get_cached_output(key: &str, working_dir: &PathBuf) -> Option<(Vec<String
 }
 
 /// Store output in cache with current project fingerprint
-pub fn store_output(key: &str, output: String, exit_code: i32, working_dir: &PathBuf) {
+pub fn store_output(key: &str, output: String, exit_code: i32, working_dir: &Path) {
     let lines: Vec<String> = output.lines().map(|s| s.to_string()).collect();
 
     // Compute current project fingerprint
