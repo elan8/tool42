@@ -24,7 +24,7 @@ The server starts automatically when invoked. Use `tool42 --version` or `tool42 
 - `tool42_cargo` - Execute Cargo commands with pagination support (default: first 500 lines, use `from`/`to` for ranges)
 - `tool42_clippy` - Execute cargo clippy with pagination support (default: first 500 lines, use `from`/`to` for ranges). Requires clippy to be installed (`rustup component add clippy`)
 - `tool42_read` - Read files with line limits (max 500 lines)
-- `tool42_describe` - Extract Rust file structure in JSON format
+- `tool42_describe` - Parse Rust source file and extract comprehensive structural information (structs, enums, functions, impl blocks, traits, modules, etc.) with line numbers, visibility, attributes, doc comments, and signatures in JSON format
 - `tool42_search` - Search codebase for symbols, functions, types, or text patterns
 - `tool42_deps` - Get dependency information from Cargo.toml
 - `tool42_tests` - List all tests in the project with their locations

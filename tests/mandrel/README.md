@@ -29,21 +29,7 @@ The Mandrel test harness provides enterprise-grade testing capabilities for MCP 
 
 The main test specification is in `tool42-server.yaml`, which includes:
 
-- **13 Tool Tests**: Comprehensive tests for all tool42 MCP tools
-  - `tool42_cargo` - Cargo command execution
-  - `tool42_read` - File reading with line limits
-  - `tool42_describe` - Rust file structure extraction
-  - `tool42_search` - Codebase search
-  - `tool42_deps` - Dependency information
-  - `tool42_tests` - Test discovery
-  - `tool42_project` - Project structure
-  - `tool42_list` - Directory listing
-  - `tool42_docs` - Documentation extraction
-  - `tool42_refactor_rename` - Symbol renaming
-  - `tool42_refactor_extract` - Function extraction
-  - `tool42_refactor_move` - Item moving
-  - `tool42_refactor_signature` - Signature changes
-
+- **Tool Tests**: Comprehensive tests for all tool42 MCP tools
 - **Error Handling Tests**: Validation of proper MCP error codes and messages
 - **Performance Tests**: Response time validation for various operations
 

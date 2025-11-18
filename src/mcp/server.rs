@@ -117,7 +117,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_describe".into(),
                 title: Some("Describe Rust File".into()),
-                description: Some("Extract structural information from a Rust source file".into()),
+                description: Some("Parse a Rust source file and extract comprehensive structural information in JSON format. Returns a hierarchical tree of all code items including structs (with fields), enums (with variants), functions (with signatures), impl blocks (with nested methods), traits (with associated items), modules (with nested items), type aliases, constants, static items, macros, use statements, unions, and extern crates. For each item, provides name, type, start/end line numbers, visibility, attributes, doc comments, signatures, and fields. Useful for understanding file structure before reading or analyzing code.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(DescribeParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,

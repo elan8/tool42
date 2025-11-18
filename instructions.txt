@@ -9,7 +9,7 @@ Tool42 is an MCP (Model Context Protocol) server that provides structured JSON r
 - `tool42_cargo` - Execute Cargo commands with pagination support (use instead of direct `cargo` commands)
 - `tool42_clippy` - Execute cargo clippy with pagination support. Requires clippy to be installed (`rustup component add clippy`)
 - `tool42_read` - Read files or specific sections with line number limits (max 500 lines)
-- `tool42_describe` - Extract structural information from Rust source files
+- `tool42_describe` - Parse Rust source file and extract comprehensive structural information (structs, enums, functions, impl blocks, traits, modules, etc.) with line numbers, visibility, attributes, doc comments, and signatures in JSON format
 - `tool42_search` - Search for text patterns across the codebase
 - `tool42_deps` - Extract dependency information from Cargo.toml
 - `tool42_tests` - List all tests in the project
@@ -28,7 +28,7 @@ Tool42 is an MCP (Model Context Protocol) server that provides structured JSON r
 - **tool42_cargo**: For any Cargo command (build, test, check, etc.). Supports pagination for large outputs - use `from`/`to` parameters to request specific line ranges
 - **tool42_clippy**: For clippy linting. Supports pagination for large outputs - use `from`/`to` parameters to request specific line ranges. Returns error if clippy is not installed
 - **tool42_read**: When you need to read Rust source files or specific sections
-- **tool42_describe**: To understand the structure of a Rust file (structs, enums, functions, etc.)
+- **tool42_describe**: To understand the complete structure of a Rust file including all items (structs with fields, enums with variants, functions with signatures, impl blocks with nested methods, traits with associated items, modules with nested items, type aliases, constants, static items, macros, etc.) along with their line numbers, visibility, attributes, and doc comments
 - **tool42_search**: To find code patterns, function names, or text across the codebase
 - **tool42_deps**: To understand project dependencies
 - **tool42_tests**: To discover and list all tests in the project
