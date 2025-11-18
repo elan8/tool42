@@ -1,0 +1,550 @@
+# Tool42 MCP Server Test Specification
+# Comprehensive test suite for tool42 MCP server with all 14 tools
+
+name: "Tool42 MCP Server"
+version: "1.0.0"
+description: "Comprehensive testing of tool42 MCP server - Rust development tools for AI agents"
+
+# Server capabilities (verified)
+capabilities:
+  tools: true           # All 14 tools are supported
+  resources: false      # Resources not supported
+  prompts: false        # Prompts not supported
+  sampling: false       # Sampling not supported
+  logging: false        # Logging not enabled
+
+# Server startup configuration
+server:
+  command: "tool42"
+  args: []
+  env:
+    # Set working directory to project root for tests
+    # This will be overridden by individual test working_directory values
+  transport: "stdio"
+  startup_timeout_seconds: 10
+  shutdown_timeout_seconds: 5
+
+# Individual tool tests
+tools:
+  # Cargo command execution
+  - name: "tool42_cargo"
+    description: "Execute Cargo commands"
+    tests:
+      - name: "cargo_version"
+        description: "Test cargo --version command"
+        input:
+          args: ["--version"]
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "cargo"
+              required: true
+        performance:
+          max_duration_ms: 5000
+        tags: ["cargo", "success", "basic"]
+
+      - name: "cargo_check"
+        description: "Test cargo check command"
+        input:
+          args: ["check"]
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        performance:
+          max_duration_ms: 30000
+        tags: ["cargo", "check"]
+
+      - name: "cargo_with_pagination"
+        description: "Test cargo command with pagination parameters"
+        input:
+          args: ["--version"]
+          working_directory: "../.."
+          from: 1
+          to: 10
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "output_lines"
+              required: true
+            - path: "$.content[0].text"
+              contains: "total_lines"
+              required: true
+            - path: "$.content[0].text"
+              contains: "lines_returned"
+              required: true
+        tags: ["cargo", "pagination"]
+
+  # Clippy command execution
+  - name: "tool42_clippy"
+    description: "Execute Clippy commands"
+    tests:
+      - name: "clippy_version"
+        description: "Test clippy --version command (if clippy is installed)"
+        input:
+          args: ["--version"]
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "output_lines"
+              required: true
+        performance:
+          max_duration_ms: 5000
+        tags: ["clippy", "success", "basic"]
+
+      - name: "clippy_with_pagination"
+        description: "Test clippy command with pagination parameters"
+        input:
+          args: ["--version"]
+          working_directory: "../.."
+          from: 1
+          to: 5
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "output_lines"
+              required: true
+            - path: "$.content[0].text"
+              contains: "total_lines"
+              required: true
+            - path: "$.content[0].text"
+              contains: "lines_returned"
+              required: true
+        tags: ["clippy", "pagination"]
+
+      - name: "clippy_default_pagination"
+        description: "Test clippy command with default pagination (first 500 lines)"
+        input:
+          args: ["--version"]
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "output_lines"
+              required: true
+            - path: "$.content[0].text"
+              contains: "total_lines"
+              required: true
+        tags: ["clippy", "pagination", "default"]
+
+  # File reading
+  - name: "tool42_read"
+    description: "Read files with line limits"
+    tests:
+      - name: "read_cargo_toml"
+        description: "Read Cargo.toml file"
+        input:
+          path: "Cargo.toml"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "package"
+              required: true
+        performance:
+          max_duration_ms: 1000
+        tags: ["read", "success", "basic"]
+
+      - name: "read_src_lib_rs"
+        description: "Read src/lib.rs file"
+        input:
+          path: "src/lib.rs"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["read", "source"]
+
+      - name: "read_with_line_limits"
+        description: "Read file with line number limits"
+        input:
+          path: "src/lib.rs"
+          working_directory: "../.."
+          from: 1
+          to: 50
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["read", "limits"]
+
+      - name: "read_nonexistent_file"
+        description: "Error handling for non-existent file"
+        input:
+          path: "nonexistent_file.rs"
+          working_directory: "../.."
+        expected:
+          error: true
+        tags: ["read", "error"]
+
+  # File structure description
+  - name: "tool42_describe"
+    description: "Extract Rust file structure"
+    tests:
+      - name: "describe_src_lib_rs"
+        description: "Describe src/lib.rs structure"
+        input:
+          path: "src/lib.rs"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "file"
+              required: true
+        performance:
+          max_duration_ms: 2000
+        tags: ["describe", "success", "basic"]
+
+      - name: "describe_server_rs"
+        description: "Describe src/mcp/server.rs structure"
+        input:
+          path: "src/mcp/server.rs"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["describe", "structure"]
+
+  # Codebase search
+  - name: "tool42_search"
+    description: "Search codebase for patterns"
+    tests:
+      - name: "search_server_handler"
+        description: "Search for ServerHandler"
+        input:
+          query: "ServerHandler"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "matches"
+              required: true
+        performance:
+          max_duration_ms: 2000
+        tags: ["search", "success", "basic"]
+
+      - name: "search_with_path"
+        description: "Search with path filter"
+        input:
+          query: "Tool42Server"
+          path: "src/mcp"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["search", "filtered"]
+
+  # Dependency information
+  - name: "tool42_deps"
+    description: "Get dependency information"
+    tests:
+      - name: "get_dependencies"
+        description: "Extract dependency information"
+        input:
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "workspace_root"
+              required: true
+        performance:
+          max_duration_ms: 2000
+        tags: ["deps", "success", "basic"]
+
+  # Test discovery
+  - name: "tool42_tests"
+    description: "List all tests in project"
+    tests:
+      - name: "list_all_tests"
+        description: "Discover all tests"
+        input:
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "tests"
+              required: true
+        performance:
+          max_duration_ms: 3000
+        tags: ["tests", "success", "basic"]
+
+      - name: "list_tests_in_path"
+        description: "List tests in specific path"
+        input:
+          path: "tests"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["tests", "filtered"]
+
+  # Project structure
+  - name: "tool42_project"
+    description: "Get project structure overview"
+    tests:
+      - name: "get_project_structure"
+        description: "Get project structure"
+        input:
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "workspace_root"
+              required: true
+        performance:
+          max_duration_ms: 2000
+        tags: ["project", "success", "basic"]
+
+  # Directory listing
+  - name: "tool42_list"
+    description: "List directory contents"
+    tests:
+      - name: "list_src_directory"
+        description: "List src directory"
+        input:
+          path: "src"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "entries"
+              required: true
+        performance:
+          max_duration_ms: 1000
+        tags: ["list", "success", "basic"]
+
+      - name: "list_root_directory"
+        description: "List root directory"
+        input:
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["list", "root"]
+
+  # Documentation extraction
+  - name: "tool42_docs"
+    description: "Extract documentation from Rust code"
+    tests:
+      - name: "extract_docs_from_lib"
+        description: "Extract docs from src/lib.rs"
+        input:
+          path: "src/lib.rs"
+          working_directory: "../.."
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+            - path: "$.content[0].text"
+              contains: "items"
+              required: true
+        performance:
+          max_duration_ms: 2000
+        tags: ["docs", "success", "basic"]
+
+  # Refactor: Rename
+  - name: "tool42_refactor_rename"
+    description: "Rename symbols across codebase"
+    tests:
+      - name: "rename_preview_mode"
+        description: "Preview rename operation (non-destructive) - using real symbol Tool42Server"
+        input:
+          symbol: "Tool42Server"
+          to: "Tool42ServerRenamed"
+          working_directory: "../.."
+          preview: true
+          apply: false
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["refactor", "rename", "preview"]
+
+  # Refactor: Extract
+  - name: "tool42_refactor_extract"
+    description: "Extract function from code block"
+    tests:
+      - name: "extract_preview_mode"
+        description: "Preview extract operation (non-destructive)"
+        input:
+          file: "src/lib.rs"
+          working_directory: "../.."
+          from: 1
+          to: 10
+          name: "extracted_function"
+          preview: true
+          apply: false
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["refactor", "extract", "preview"]
+
+  # Refactor: Move
+  - name: "tool42_refactor_move"
+    description: "Move items between modules"
+    tests:
+      - name: "move_preview_mode"
+        description: "Preview move operation (non-destructive) - using real function handle_cargo"
+        input:
+          symbol: "handle_cargo"
+          to: "src/mcp/new_module.rs"
+          working_directory: "../.."
+          preview: true
+          apply: false
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["refactor", "move", "preview"]
+
+  # Refactor: Signature
+  - name: "tool42_refactor_signature"
+    description: "Change function signatures"
+    tests:
+      - name: "signature_preview_mode"
+        description: "Preview signature change (non-destructive) - using real function handle_cargo"
+        input:
+          function: "handle_cargo"
+          new_signature: "pub async fn handle_cargo(params: Value, new_param: String) -> Result<Value, String>"
+          working_directory: "../.."
+          preview: true
+          apply: false
+        expected:
+          error: false
+          fields:
+            - path: "$.content[0].text"
+              field_type: "string"
+              required: true
+        tags: ["refactor", "signature", "preview"]
+
+# Error handling tests
+error_tests:
+  - name: "unknown_tool_error"
+    description: "Test error handling for unknown tool"
+    tool: "tool42_unknown"
+    input:
+      working_directory: "../.."
+    expected:
+      error: true
+      error_code: -32601
+      error_message_contains: "Unknown tool"
+    tags: ["error", "unknown-tool"]
+
+  - name: "missing_required_parameter"
+    description: "Test error for missing required parameter"
+    tool: "tool42_read"
+    input:
+      working_directory: "../.."
+    expected:
+      error: true
+    tags: ["error", "validation"]
+
+  - name: "invalid_file_path"
+    description: "Test error for invalid file path in read"
+    tool: "tool42_read"
+    input:
+      path: "nonexistent_file.rs"
+      working_directory: "../.."
+    expected:
+      error: true
+    tags: ["error", "file-not-found"]
+
+# Test execution configuration
+test_config:
+  timeout_seconds: 120
+  max_concurrency: 4
+  fail_fast: false
+  retry:
+    max_retries: 1
+    retry_delay_ms: 1000
+    exponential_backoff: false
+
+# Metadata
+metadata:
+  author: "Tool42 Team"
+  documentation: "https://github.com/rustic-ai/tool42"
+  license: "MIT OR Apache-2.0"
+  tags: ["rust", "mcp", "development-tools", "comprehensive"]
+  quality_targets:
+    success_rate_percent: 95
+    error_handling_coverage_percent: 100
+

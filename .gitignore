@@ -1,0 +1,5 @@
+.cursor/*
+/tests/mandrel/reports/*
+/target
+/temp/*
+/3rdparty/*

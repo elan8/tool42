@@ -1,0 +1,28 @@
+[package]
+name = "tool42"
+version = "0.1.0"
+edition = "2021"
+authors = ["Jeroen Vennegoor op Nijhuis"]
+description = "Tool42 MCP Server - AI assisted Rust development made easy"
+license = "MIT"
+repository = "https://github.com/elan8/tool42"
+
+[[bin]]
+name = "tool42"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+anyhow = "1.0"
+syn = { version = "2.0", features = ["full", "visit", "visit-mut"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+quote = "1.0"
+proc-macro2 = "1.0"
+regex = "1.10"
+rmcp = { version = "0.8", features = ["server"] }
+tokio = { version = "1.0", features = ["full"] }
+schemars = { version = "0.8", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3.10"

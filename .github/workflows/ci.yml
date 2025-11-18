@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Check for changes since last run
+  check-changes:
+    name: Check for changes
+    runs-on: ubuntu-latest
+    outputs:
+      has-changes: ${{ steps.changes.outputs.has-changes || 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes since last successful run
+        id: changes
+        if: github.event_name == 'schedule'
+        run: |
+          # Get the last successful workflow run commit SHA
+          LAST_SHA=$(gh run list --workflow="CI" --status=success --limit=1 --json headSha --jq '.[0].headSha // empty')
+          
+          if [ -z "$LAST_SHA" ]; then
+            echo "No previous successful run found, running workflow"
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check if there are any changes since last successful run
+          if git diff --quiet $LAST_SHA..HEAD; then
+            echo "No changes since last successful run, skipping workflow"
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected since last successful run"
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Set default for non-schedule events
+        if: github.event_name != 'schedule'
+        run: echo "has-changes=true" >> $GITHUB_OUTPUT
+
+  # Unit tests job - runs on all platforms
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: check-changes
+    if: needs.check-changes.outputs.has-changes == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+
+      - name: Run unit tests
+        run: cargo test --all-features --verbose
+
+  # Mandrel MCP tests - runs on Linux
+  mandrel-tests:
+    name: Mandrel MCP Tests
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.has-changes == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install tool42
+        run: cargo install --path .
+
+      - name: Cache Mandrel test harness build
+        uses: actions/cache@v4
+        with:
+          path: 3rdparty/codeprism/target
+          key: ${{ runner.os }}-moth-${{ hashFiles('3rdparty/codeprism/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-moth-
+
+      - name: Build Mandrel test harness (moth)
+        working-directory: 3rdparty/codeprism
+        run: |
+          moth_path="target/release/moth"
+          if [ -f "$moth_path" ]; then
+            echo "moth binary found in cache, skipping build"
+          else
+            echo "moth binary not found, building..."
+            cargo build --release --bin moth
+          fi
+
+      - name: Verify moth binary exists
+        run: |
+          moth_path="$PWD/3rdparty/codeprism/target/release/moth"
+          if [ ! -f "$moth_path" ]; then
+            echo "ERROR: moth binary not found at $moth_path" >&2
+            exit 1
+          fi
+          echo "moth binary found at $moth_path"
+
+      - name: Make shell script executable
+        run: chmod +x tests/mandrel/run-tests.sh
+
+      - name: Run Mandrel MCP tests
+        working-directory: tests/mandrel
+        run: ./run-tests.sh
+

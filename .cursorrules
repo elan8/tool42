@@ -1,0 +1,8 @@
+# Tool42 Usage Rules
+
+**Always use tool42 MCP tools instead of direct cargo commands and for Rust software engineering tasks.**
+
+Tool42 provides structured JSON responses for Rust codebases. Use MCP tools: `tool42_cargo` (instead of `cargo`), `tool42_read`, `tool42_describe`, `tool42_search`, `tool42_deps`, `tool42_tests`, `tool42_project`, `tool42_list`, `tool42_docs`. All tools return structured JSON directly - no temp files or stdout parsing needed.
+
+**Important**: The `working_directory` input parameter for tool42 MCP tools must be an absolute path.
+
