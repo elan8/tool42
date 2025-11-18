@@ -3,6 +3,28 @@
 
 Tool42 is an MCP (Model Context Protocol) server that provides Rust development tools for AI agents. It enables AI agents to perform various tasks for Rust software development, including executing Cargo commands, reading and analyzing source files, searching codebases, managing dependencies, discovering tests, analyzing project structure, extracting documentation, and performing refactoring operations.
 
+## Installation
+
+### From Source (Current)
+
+Currently, Tool42 must be installed from source:
+
+```bash
+git clone <repository-url>
+cd tool42
+cargo install --path .
+```
+
+This will install the `tool42` binary to your Cargo bin directory (typically `~/.cargo/bin` on Unix systems or `%USERPROFILE%\.cargo\bin` on Windows).
+
+### From crates.io (Coming Soon)
+
+Tool42 will be available on crates.io soon, making installation easier:
+
+```bash
+cargo install tool42
+```
+
 ## Quick Start
 
 **MCP Client Configuration:**
