@@ -120,6 +120,15 @@ jobs:
       - name: Install tool42
         run: cargo install --path .
 
+      - name: Clone codeprism
+        run: |
+          mkdir -p 3rdparty
+          if [ -d "3rdparty/codeprism" ]; then
+            echo "codeprism directory already exists, removing it"
+            rm -rf 3rdparty/codeprism
+          fi
+          git clone https://github.com/rustic-ai/codeprism.git 3rdparty/codeprism
+
       - name: Cache Mandrel test harness build
         uses: actions/cache@v4
         with:
