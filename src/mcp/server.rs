@@ -127,7 +127,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_search".into(),
                 title: Some("Search Codebase".into()),
-                description: Some("Search for text patterns across the codebase".into()),
+                description: Some("Search for text patterns in Rust source files (.rs) across the codebase. The query is treated as a literal string (regex-escaped) and matched case-insensitively. Returns matches with file path, line number, and the matching line as context. Automatically skips hidden files/directories and the target directory. If no path is specified, searches from the workspace root. Query cannot be empty.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(SearchParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
@@ -158,7 +158,7 @@ impl ServerHandler for Tool42Server {
             Tool {
                 name: "tool42_project".into(),
                 title: Some("Get Project Structure".into()),
-                description: Some("Get overview of project structure. By default returns a lightweight summary with package metadata (name, version, edition, etc.) but no module details. Use `detailed_package` to specify a single package that should include detailed module information. Use `max_depth` to control module traversal depth for the detailed package (default: 2). This prevents large outputs that require file writing.".into()),
+                description: Some("Get a high-level overview of the Rust project structure. Returns workspace information (if applicable), workspace-level dependencies, and a list of packages with their crates. For workspaces, only includes packages listed in workspace.members. For non-workspace projects, includes only the root package. Each package includes metadata (name, version, edition, description, license) and package-level dependencies (dependencies, dev-dependencies, build-dependencies). Each crate is listed with its name and type (lib or bin). Uses Cargo.toml to determine project structure, not directory scanning.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(ProjectParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,

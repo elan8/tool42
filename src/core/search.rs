@@ -18,6 +18,11 @@ pub struct Match {
 }
 
 pub fn search(query: String, path: Option<PathBuf>) -> anyhow::Result<SearchResults> {
+    // Validate query is not empty
+    if query.trim().is_empty() {
+        anyhow::bail!("Query cannot be empty");
+    }
+
     let search_path = path.unwrap_or_else(|| PathBuf::from("."));
 
     if !search_path.exists() {
@@ -27,7 +32,7 @@ pub fn search(query: String, path: Option<PathBuf>) -> anyhow::Result<SearchResu
     let mut matches = Vec::new();
 
     // Build regex from query (case-insensitive)
-    let regex = Regex::new(&regex::escape(&query)).context("Failed to create regex from query")?;
+    let regex = Regex::new(&format!("(?i){}", regex::escape(&query))).context("Failed to create regex from query")?;
 
     // Walk directory tree
     if search_path.is_file() {
