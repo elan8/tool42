@@ -42,7 +42,7 @@ pub fn execute_mcp_paginated(
     let cache_key = cache::generate_cache_key(&working_dir, &args);
 
     // Check cache first
-    if let Some((cached_lines, exit_code)) = cache::get_cached_output(&cache_key) {
+    if let Some((cached_lines, exit_code)) = cache::get_cached_output(&cache_key, &working_dir) {
         let total_lines = cached_lines.len();
         let (start_idx, end_idx) = determine_range(from, to, total_lines)?;
 
@@ -80,7 +80,7 @@ pub fn execute_mcp_paginated(
     }
 
     // Store in cache
-    cache::store_output(&cache_key, output.clone(), exit_code);
+    cache::store_output(&cache_key, output.clone(), exit_code, &working_dir);
 
     // Split into lines and paginate
     let all_lines: Vec<String> = output.lines().map(|s| s.to_string()).collect();
