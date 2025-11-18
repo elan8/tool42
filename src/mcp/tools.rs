@@ -178,30 +178,26 @@ pub async fn handle_project(params: Value) -> Result<Value, String> {
     let project_params: ProjectParams =
         serde_json::from_value(params).map_err(|e| format!("Invalid parameters: {}", e))?;
 
-    let path_str = project_params.path.clone();
     let working_dir_str = project_params.working_directory.clone();
+    
     let result = tokio::task::spawn_blocking(move || -> Result<_, String> {
         // Resolve working_directory to absolute path
         let working_dir = core::project::resolve_working_directory(&working_dir_str)
             .map_err(|e| format!("Failed to resolve working directory: {}", e))?;
 
-        let path = if let Some(p) = path_str {
-            match core::project::resolve_path(&PathBuf::from(p), &working_dir) {
-                Ok(resolved) => Some(resolved),
-                Err(e) => return Err(format!("Failed to resolve path: {}", e)),
-            }
-        } else {
-            match core::project::find_workspace_root(&working_dir) {
-                Ok(root) => Some(root),
-                Err(e) => return Err(format!("Failed to find project root: {}", e)),
-            }
-        };
-        core::project::get_structure(path).map_err(|e| format!("Project failed: {}", e))
+        // Find workspace root from working directory
+        let workspace_root = core::project::find_workspace_root(&working_dir)
+            .map_err(|e| format!("Failed to find project root: {}", e))?;
+        
+        // Get high-level overview (no detailed modules)
+        core::project::get_structure(workspace_root)
+            .map_err(|e| format!("Project failed: {}", e))
     })
     .await
     .map_err(|e| format!("Task join error: {}", e))?
     .map_err(|e| format!("Project failed: {}", e))?;
 
+    // Return JSON directly through MCP protocol (not written to a file)
     serde_json::to_value(result).map_err(|e| format!("Serialization error: {}", e))
 }
 

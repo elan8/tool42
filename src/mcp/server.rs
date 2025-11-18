@@ -92,6 +92,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_clippy".into(),
@@ -101,6 +102,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_read".into(),
@@ -110,6 +112,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_describe".into(),
@@ -119,6 +122,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_search".into(),
@@ -128,6 +132,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_deps".into(),
@@ -138,6 +143,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_tests".into(),
@@ -147,15 +153,17 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_project".into(),
                 title: Some("Get Project Structure".into()),
-                description: Some("Get overview of project structure".into()),
+                description: Some("Get overview of project structure. By default returns a lightweight summary with package metadata (name, version, edition, etc.) but no module details. Use `detailed_package` to specify a single package that should include detailed module information. Use `max_depth` to control module traversal depth for the detailed package (default: 2). This prevents large outputs that require file writing.".into()),
                 input_schema: schema_to_map(serde_json::to_value(schemars::schema_for!(ProjectParams)).unwrap_or_default()),
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_list".into(),
@@ -165,6 +173,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_docs".into(),
@@ -174,6 +183,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_refactor_rename".into(),
@@ -183,6 +193,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_refactor_extract".into(),
@@ -192,6 +203,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_refactor_move".into(),
@@ -201,6 +213,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
             Tool {
                 name: "tool42_refactor_signature".into(),
@@ -210,6 +223,7 @@ impl ServerHandler for Tool42Server {
                 output_schema: None,
                 annotations: None,
                 icons: None,
+                meta: None,
             },
         ];
 
