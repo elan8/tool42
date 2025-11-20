@@ -3,6 +3,17 @@
 
 Tool42 is an MCP (Model Context Protocol) server that provides Rust development tools for AI agents. It enables AI agents to perform various tasks for Rust software development, including executing Cargo commands, reading and analyzing source files, searching codebases, managing dependencies, discovering tests, analyzing project structure, extracting documentation, and performing refactoring operations.
 
+## TODO
+
+Future features planned for Tool42:
+
+- [] **Cross-platform file rename/move tool**: Add a tool for renaming and moving files across different platforms (Windows, Unix, etc.)
+- [] **Code formatting tool**: Integrate `rustfmt` to format Rust code with configurable options
+- [] **Security audit tool**: Add `cargo audit` integration to check for known security vulnerabilities in dependencies
+- [] **Dependency update tool**: Provide tools to check and update dependencies (cargo update, cargo upgrade)
+- [] **Code metrics tool**: Calculate code statistics (lines of code, cyclomatic complexity, function counts, etc.)
+
+
 ## Installation
 
 ### From Source (Current)
