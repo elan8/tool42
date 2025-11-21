@@ -1,3 +1,30 @@
+//! # Tool42 Binary
+//!
+//! The `tool42` binary is the entry point for the Tool42 MCP server. When invoked, it starts
+//! an MCP server that provides Rust development tools for AI agents.
+//!
+//! ## Usage
+//!
+//! ```bash
+//! tool42              # Start the MCP server
+//! tool42 --version    # Show version information
+//! tool42 --help       # Show help information
+//! ```
+//!
+//! ## MCP Server
+//!
+//! When run without flags, the binary starts an MCP server that communicates via stdin/stdout
+//! following the Model Context Protocol specification. The server provides various tools for
+//! Rust development, including:
+//!
+//! - Cargo command execution with pagination
+//! - Code analysis and structure extraction
+//! - Dependency management
+//! - Test discovery
+//! - Refactoring operations
+//!
+//! For detailed information about available tools, see the [crate documentation](tool42).
+
 use clap::Parser;
 
 #[derive(Parser)]

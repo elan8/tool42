@@ -6,6 +6,8 @@ authors = ["Jeroen Vennegoor op Nijhuis"]
 description = "Tool42 MCP Server - AI assisted Rust development made easy"
 license = "MIT"
 repository = "https://github.com/elan8/tool42"
+readme = "README.md"
+documentation = "https://docs.rs/tool42"
 
 [[bin]]
 name = "tool42"
