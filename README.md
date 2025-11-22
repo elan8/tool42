@@ -21,24 +21,24 @@ Future features planned for Tool42:
 
 ## Installation
 
-### From Source (Current)
+### From crates.io (Recommended)
 
-Currently, Tool42 must be installed from source:
+Tool42 is available on crates.io and can be easily installed:
+
+```bash
+cargo install tool42
+```
+
+This will install the `tool42` binary to your Cargo bin directory (typically `~/.cargo/bin` on Unix systems or `%USERPROFILE%\.cargo\bin` on Windows).
+
+### From Source
+
+Alternatively, you can install Tool42 from source:
 
 ```bash
 git clone https://github.com/elan8/tool42.git
 cd tool42
 cargo install --path .
-```
-
-This will install the `tool42` binary to your Cargo bin directory (typically `~/.cargo/bin` on Unix systems or `%USERPROFILE%\.cargo\bin` on Windows).
-
-### From crates.io (Coming Soon)
-
-Tool42 will be available on crates.io soon, making installation easier:
-
-```bash
-cargo install tool42
 ```
 
 ## Quick Start
